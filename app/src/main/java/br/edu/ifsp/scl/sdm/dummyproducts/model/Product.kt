@@ -12,4 +12,8 @@ data class Product(
     val stock: Int,
     val thumbnail: String,
     val title: String
-)
+){
+    override fun toString(): String {
+        return title // retorno da função toString será somente o valor do campo title
+    }
+}
