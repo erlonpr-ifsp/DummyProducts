@@ -13,8 +13,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(amb.root)
 
+        // define quem é a action bar
         setSupportActionBar(amb.mainTb.apply {
-            title = getString(R.string.app_name)
+            title = getString(R.string.app_name) // define o título da action bar
         })
     }
 }
