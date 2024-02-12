@@ -49,33 +49,53 @@ class MainActivity : AppCompatActivity() {
     }
 
     // função para buscar o conteúdo JSON no Web Service e popular o Spinner
-    private fun retrieveProducts() {
-        val productsConnection =
-            URL(PRODUCTS_ENDPOINT).openConnection() as HttpURLConnection // conexão é feita por padrão com o método GET
+    private fun retrieveProducts() =
+        Thread { // criação de uma thread secundária para execução do código que importa os dados JSON para o ProductAdapter (Runnable de Thread)
+            val productsConnection =
+                URL(PRODUCTS_ENDPOINT).openConnection() as HttpURLConnection // conexão é feita por padrão com o método GET
 
-        try {
-            if (productsConnection.responseCode == HttpURLConnection.HTTP_OK) {
+            try {
+                if (productsConnection.responseCode == HttpURLConnection.HTTP_OK) {
 
-                InputStreamReader(productsConnection.inputStream).readText().let {
-                    productAdapter.addAll(
-                        Gson().fromJson(
-                            it,
-                            ProductList::class.java
-                        ).products
-                    ) // reflexão do objeto JSON em uma lista de ProductList
+                    InputStreamReader(productsConnection.inputStream).readText().let {
+
+                        runOnUiThread {
+                            // Runnable do runOnUiThread
+
+                            productAdapter.addAll(
+                                Gson().fromJson(
+                                    it,
+                                    ProductList::class.java
+                                ).products
+                            ) // reflexão do objeto JSON em uma lista de ProductList
+                        }
+
+
+                    }
+
+                } else {
+                    runOnUiThread {
+                        Toast.makeText(
+                            this,
+                            getString(R.string.request_problem),
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
                 }
-
-            } else {
-                Toast.makeText(this, getString(R.string.request_problem), Toast.LENGTH_SHORT).show()
+            } catch (ioe: IOException) {
+                runOnUiThread {
+                    Toast.makeText(this, getString(R.string.connection_failed), Toast.LENGTH_SHORT)
+                        .show()
+                }
+            } catch (jse: JsonSyntaxException) {
+                runOnUiThread {
+                    Toast.makeText(this, getString(R.string.response_problem), Toast.LENGTH_SHORT)
+                        .show()
+                }
+            } finally {
+                productsConnection.disconnect()
             }
-        } catch (ioe: IOException) {
-            Toast.makeText(this, getString(R.string.connection_failed), Toast.LENGTH_SHORT).show()
-        } catch (jse: JsonSyntaxException) {
-            Toast.makeText(this, getString(R.string.response_problem), Toast.LENGTH_SHORT).show()
-        } finally {
-            productsConnection.disconnect()
-        }
-
-    }
+        }.start()
 
 }
