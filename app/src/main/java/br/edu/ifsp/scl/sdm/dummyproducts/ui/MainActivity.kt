@@ -38,9 +38,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     // companion object é utilizado para criar membros de classe que são acessíveis diretamente na classe, em vez de em instâncias específicas da classe
+    /*
     companion object {
         const val PRODUCTS_ENDPOINT = "https://dummyjson.com/products/"
     }
+    */
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,15 +87,35 @@ class MainActivity : AppCompatActivity() {
     // função para buscar o conteúdo JSON no Web Service e popular o Spinner
 
     private fun retrieveProducts() =
-        StringRequest(Request.Method.GET, PRODUCTS_ENDPOINT, { response ->
-            Gson().fromJson(
-                response, ProductList::class.java
-            ).products.also { productAdapter.addAll(it) }
-        }, {
-            Toast.makeText(
-                this, getString(R.string.request_problem), Toast.LENGTH_SHORT
-            ).show()
-        }).also { DummyJSONAPI.getInstance(this).addRequestQueue(it) }
+        DummyJSONAPI.ProductListRequest(
+            { productList ->
+                productList.products.also {
+                    productAdapter.addAll(it)
+                }
+            },
+            {
+                Toast.makeText(
+                    this, getString(R.string.request_problem), Toast.LENGTH_SHORT
+                ).show()
+            }
+        ).also {
+            DummyJSONAPI.getInstance(this).addToRequestQueue(it)
+        }
+
+
+    /*  StringRequest(Request.Method.GET, PRODUCTS_ENDPOINT,
+      {
+          response ->
+          Gson().fromJson(
+              response, ProductList::class.java
+          ).products.also { productAdapter.addAll(it) }
+      },
+      {
+          Toast.makeText(
+              this, getString(R.string.request_problem), Toast.LENGTH_SHORT
+          ).show()
+      }).also
+      { DummyJSONAPI.getInstance(this).addRequestQueue(it) }*/
 
 
     // função para buscar o conteúdo JSON no Web Service e popular o Spinner
@@ -164,7 +186,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(
                     this, getString(R.string.request_problem), Toast.LENGTH_SHORT
                 ).show()
-            }).also { DummyJSONAPI.getInstance(this).addRequestQueue(it) }
+            }).also { DummyJSONAPI.getInstance(this).addToRequestQueue(it) }
     }
 
     // função para buscar as imagens de produto no arquivo JSON
